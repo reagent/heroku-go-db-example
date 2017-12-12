@@ -46,33 +46,37 @@ func main() {
 	handler.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 
-		switch r.Method {
-		case "GET":
-			users, err := users(db)
+		if r.URL.Path == "/" {
+			switch r.Method {
+			case "GET":
+				users, err := users(db)
 
-			if err != nil {
-				errorResponse(r, w, err)
+				if err != nil {
+					errorResponse(r, w, err)
+				}
+
+				respond(r, w, http.StatusOK, users)
+			case "POST":
+				user, err := unmarshalUser(r)
+
+				if err != nil {
+					errorResponse(r, w, err)
+					return
+				}
+
+				created, err := createUser(db, user.Username)
+
+				if err != nil {
+					errorResponse(r, w, err)
+					return
+				}
+
+				respond(r, w, http.StatusOK, created)
+			default:
+				respond(r, w, http.StatusNotFound, nil)
 			}
-
-			respond(r, w, http.StatusOK, users)
-		case "POST":
-			user, err := unmarshalUser(r)
-
-			if err != nil {
-				errorResponse(r, w, err)
-				return
-			}
-
-			created, err := createUser(db, user.Username)
-
-			if err != nil {
-				errorResponse(r, w, err)
-				return
-			}
-
-			respond(r, w, http.StatusOK, created)
-		default:
-			respond(r, w, http.StatusNotFound, map[string]string{})
+		} else {
+			respond(r, w, http.StatusNotFound, nil)
 		}
 	})
 
@@ -178,14 +182,18 @@ func createUser(db *sql.DB, username string) (*User, error) {
 }
 
 func respond(r *http.Request, w http.ResponseWriter, status int, data interface{}) {
-	bytes, err := json.Marshal(data)
+	if data != nil {
+		bytes, err := json.Marshal(data)
 
-	if err != nil {
-		errorResponse(r, w, err)
-		return
+		if err != nil {
+			errorResponse(r, w, err)
+			return
+		}
+
+    response(r, w, status, bytes)
+	} else {
+    response(r, w, status, nil)
 	}
-
-	response(r, w, status, bytes)
 }
 
 func errorResponse(r *http.Request, w http.ResponseWriter, err error) {
@@ -195,12 +203,14 @@ func errorResponse(r *http.Request, w http.ResponseWriter, err error) {
 }
 
 func response(r *http.Request, w http.ResponseWriter, status int, bytes []byte) {
-	bytes = append(bytes, '\n')
-
 	w.Header().Set("Content-Type", "application/json")
 
 	w.WriteHeader(status)
-	w.Write(bytes)
+
+  if bytes != nil {
+    bytes = append(bytes, '\n')
+    w.Write(bytes)
+  }
 
 	log.Printf(
 		"\"%s %s %s\" %d %d\n",
