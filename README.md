@@ -41,10 +41,14 @@ $ git push heroku master
 
 ## Testing
 
-* `GET:  curl -s https://heroku-go-db-example.herokuapp.com | jq .`
-* `POST: curl -s -d '{"username":"reagent"}' https://heroku-go-db-example.herokuapp.com | jq .`
-* `404:  curl -i -X OPTIONS https://heroku-go-db-example.herokuapp.com`
-* `404:  curl -i https://heroku-go-db-example.herokuapp.com/unknown`
+```
+GET:  curl -s https://heroku-go-db-example.herokuapp.com | jq .
+POST: curl -s -d '{"username":"reagent"}' https://heroku-go-db-example.herokuapp.com | jq .
+404:  curl -i -X OPTIONS https://heroku-go-db-example.herokuapp.com
+404:  curl -i https://heroku-go-db-example.herokuapp.com/unknown
+```
 
-[1] https://github.com/lib/pq
-[2] https://github.com/kardianos/govendor
+## Links
+
+* [1] https://github.com/lib/pq
+* [2] https://github.com/kardianos/govendor
