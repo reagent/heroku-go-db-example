@@ -44,8 +44,6 @@ func main() {
 	handler := http.NewServeMux()
 
 	handler.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-
 		if r.URL.Path == "/" {
 			switch r.Method {
 			case "GET":
